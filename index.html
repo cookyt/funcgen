@@ -1,11 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Audio Function Generator</title>
-  <link rel="icon" href="favicon.svg">
-  <script type="module" src="app.mjs"></script> </head>
-<body>
+<meta charset="UTF-8" />
+<title>Audio Function Generator</title>
+
+<link rel="icon" href="favicon.svg">
+<link rel="stylesheet" href="style.css">
+<script type="module" src="app.mjs"></script>
+
+<div class="header">
+  <img class="icon" src="favicon.svg">
   <h1>Audio Function Generator</h1>
-</body>
-</html>
+</div>
+
+<div id="oscillatorPanel">
+  <button id="playPauseButton">Play</button>
+  <select id="functionKindSelect">
+    <option value="sine">Sine</option>
+    <option value="square">Square</option>
+    <option value="sawtooth">Sawtooth</option>
+    <option value="triangle">Triangle</option>
+  </select>
+
+  <div id="frequencyInput">
+    <input id="frequencyInputText" type="text" placeholder="440 Hz"/>
+    <input id="frequencyInputSlider" type="range" min="0" max="127" step="1"/>
+  </div>
+</div>

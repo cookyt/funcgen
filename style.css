@@ -1,0 +1,39 @@
+body {
+  font-family: sans-serif;
+  margin: 0 auto;
+  max-width: 800px;
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+}
+
+.icon {
+  height: 3em;
+  padding: 0 1.5em;
+}
+
+
+/*-------*/
+
+#oscillatorPanel {
+  display: grid;
+  grid: repeat(3, minmax(2em, max-content)) / auto-flow 1fr 3fr;
+  gap: 0.5em;
+}
+#playPauseButton {
+  font-size: x-large;
+  grid-row: span 2;
+}
+#functionKindSelect {
+  grid-row: span 1;
+}
+
+#frequencyInput {
+  display: flex;
+  flex-direction: column;
+  grid-row: span 3;
+  align-self: center;
+}
