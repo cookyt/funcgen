@@ -24,6 +24,7 @@ class FrequencyChangeEvent extends Event {
     this.frequency = frequency;
   }
 }
+
 class FrequencyEventTarget extends EventTarget {
   /**
    * @param {Frequency} freq
@@ -118,3 +119,9 @@ gPlayPauseButton.addEventListener('click', (e) => {
   gOscillator.connect(ctx.destination);
   gOscillator.start();
 });
+
+if (window.location.hostname == 'localhost') {
+  console.log('Running locally.');
+  const newtitle = `local: ${document.title}`;
+  document.title = newtitle;
+}

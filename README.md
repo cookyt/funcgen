@@ -3,7 +3,6 @@ Simple Audio Function Generator
 
 ## Roadmap
 
-- Frequency Slider (interplays with Frequency input text).
 - Prevent the screen from sleeping when sound is playing.
 - Put the panel into a web-component and allow multiple instances (so we can
   play multiple functions at once).
