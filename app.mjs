@@ -1,13 +1,5 @@
 /** @type {HTMLElement} */
 const gOscillatorPanel = document.querySelector("#oscillatorPanel");
-/** @type {HTMLButtonElement} */
-const gPlayPauseButton = document.querySelector("#playPauseButton");
-/** @type {HTMLSelectElement} */
-const gFunctionKindSelect = document.querySelector("#functionKindSelect");
-/** @type {HTMLInputElement} */
-const gFrequencyInputText = document.querySelector("#frequencyInputText");
-/** @type {HTMLInputElement} */
-const gFrequencyInputSlider = document.querySelector("#frequencyInputSlider");
 
 ///////
 
@@ -15,8 +7,13 @@ const gFrequencyInputSlider = document.querySelector("#frequencyInputSlider");
 
 import {Frequency, MidiNote, NoteError} from "./note.mjs";
 
+/** @type {HTMLInputElement} */
+const gFrequencyInputText = document.querySelector("#frequencyInputText");
+/** @type {HTMLInputElement} */
+const gFrequencyInputSlider = document.querySelector("#frequencyInputSlider");
+
 const gSliderNote = new MidiNote();
-gSliderNote.index = gFrequencyInputSlider.value;
+gFrequencyInputSlider.value = gSliderNote.index;
 
 class FrequencyChangeEvent extends Event {
   /**
@@ -69,6 +66,11 @@ gFrequencyInputSlider.addEventListener("input", (e) => {
 
 //////
 
+/** @type {HTMLButtonElement} */
+const gPlayPauseButton = document.querySelector("#playPauseButton");
+/** @type {HTMLSelectElement} */
+const gFunctionKindSelect = document.querySelector("#functionKindSelect");
+
 /** @type {?AudioContext} */
 var gAudioContext = null;
 
@@ -77,33 +79,42 @@ var gOscillator = null;
 
 /** @type {Frequency} */
 var gLatestValidFrequency = new Frequency();
-gFrequencyEventTarget.addEventListener('FrequencyChange', (e) => {
-  console.log(e);
+gFrequencyEventTarget.addEventListener('FrequencyChange', (
+    /** @type {FrequencyChangeEvent} **/e) => {
   gLatestValidFrequency = e.frequency;
+  if (gOscillator != null) {
+    gOscillator.frequency.value = e.frequency.hz;
+  }
+});
+
+gFunctionKindSelect.addEventListener('input', (e) => {
+  if (gOscillator != null) {
+    gOscillator.type = e.target.value;
+  }
 });
 
 gPlayPauseButton.addEventListener('click', (e) => {
-  const buttonClassList = gPlayPauseButton.classList;
-  if (buttonClassList.contains('playing')) {
-    gPlayPauseButton.innerText = 'Play';
-    buttonClassList.remove('playing');
+  const classList = e.target.classList;
+  if (classList.contains('playing')) {
+    e.target.innerText = 'Play';
+    classList.remove('playing');
     if (gOscillator !== null) gOscillator.stop();
     gOscillator = null;
-  } else {
-    gPlayPauseButton.innerText = 'Pause';
-    buttonClassList.add('playing');
-
-    if (gAudioContext === null) {
-      gAudioContext = new window.AudioContext();
-    }
-    const ctx = gAudioContext;
-
-    if (gOscillator !== null) gOscillator.stop();
-    gOscillator = ctx.createOscillator();
-    gOscillator.type = gFunctionKindSelect.value || 'sine';
-    gOscillator.frequency.setValueAtTime(
-      gLatestValidFrequency.hz, ctx.currentTime);
-    gOscillator.connect(ctx.destination);
-    gOscillator.start();
+    return;
   }
+
+  e.target.innerText = 'Pause';
+  classList.add('playing');
+
+  if (gAudioContext === null) {
+    gAudioContext = new window.AudioContext();
+  }
+  const ctx = gAudioContext;
+
+  if (gOscillator !== null) gOscillator.stop();
+  gOscillator = ctx.createOscillator();
+  gOscillator.type = gFunctionKindSelect.value || 'sine';
+  gOscillator.frequency.value = gLatestValidFrequency.hz;
+  gOscillator.connect(ctx.destination);
+  gOscillator.start();
 });
