@@ -1,31 +1,70 @@
 /** @type {HTMLElement} */
-const oscillatorPanel = document.querySelector("#oscillatorPanel");
+const gOscillatorPanel = document.querySelector("#oscillatorPanel");
 /** @type {HTMLButtonElement} */
-const playPauseButton = document.querySelector("#playPauseButton");
+const gPlayPauseButton = document.querySelector("#playPauseButton");
 /** @type {HTMLSelectElement} */
-const functionKindSelect = document.querySelector("#functionKindSelect");
+const gFunctionKindSelect = document.querySelector("#functionKindSelect");
 /** @type {HTMLInputElement} */
-const frequencyInputText = document.querySelector("#frequencyInputText");
+const gFrequencyInputText = document.querySelector("#frequencyInputText");
 /** @type {HTMLInputElement} */
-const frequencyInputSlider = document.querySelector("#frequencyInputSlider");
+const gFrequencyInputSlider = document.querySelector("#frequencyInputSlider");
 
 ///////
 
-import { Frequency, MidiNote } from "./freq.mjs";
+// TODO: Make this section a web component.
 
-/** @type {Frequency} */
-var latestValidFrequency_ = new Frequency();
+import {Frequency, MidiNote, NoteError} from "./note.mjs";
 
-frequencyInputText.addEventListener("input", (/** @type {InputEvent} */ e) => {
+const gSliderNote = new MidiNote();
+gSliderNote.index = gFrequencyInputSlider.value;
+
+class FrequencyChangeEvent extends Event {
+  /**
+   * @param {Frequency} frequency
+   */
+  constructor(frequency) {
+    super("FrequencyChange");
+    this.frequency = frequency;
+  }
+}
+class FrequencyEventTarget extends EventTarget {
+  /**
+   * @param {Frequency} freq
+   */
+  dispatchFrequency(freq) {
+    this.dispatchEvent(new FrequencyChangeEvent(freq));
+  }
+};
+
+const gFrequencyEventTarget = new FrequencyEventTarget();
+
+gFrequencyInputText.addEventListener("input", (e) => {
   console.debug(e);
-  const freq = Frequency.parse(frequencyInputText.value);
-  console.info(`${freq.hz} Hz`);
-  latestValidFrequency_ = freq;
+
+  let freq;
+  gFrequencyInputText.setCustomValidity("");
+  try {
+    freq = Frequency.parse(gFrequencyInputText.value);
+  } catch (err) {
+    if (!(err instanceof NoteError)) throw err;
+    gFrequencyInputText.setCustomValidity(err.message);
+    return;
+  } finally {
+    gFrequencyInputText.reportValidity();
+  }
+
+  gFrequencyEventTarget.dispatchFrequency(freq);
+  gSliderNote.frequency = freq;
+  gFrequencyInputSlider.value = gSliderNote.index;
 });
 
-frequencyInputSlider.addEventListener("input", (e) => {
+gFrequencyInputSlider.addEventListener("input", (e) => {
   console.debug(e);
-  frequencyInputSlider.value
+  gSliderNote.index = gFrequencyInputSlider.value;
+  gFrequencyEventTarget.dispatchFrequency(gSliderNote.frequency);
+  const hz = gSliderNote.frequency.hz;
+  gFrequencyInputText.value =
+      `${hz.toLocaleString('en-US', {maximumFractionDigits: 2})} Hz`;
 });
 
 //////
@@ -36,15 +75,22 @@ var gAudioContext = null;
 /** @type {?OscillatorNode} */
 var gOscillator = null;
 
-playPauseButton.addEventListener('click', (e) => {
-  const buttonClassList = playPauseButton.classList;
+/** @type {Frequency} */
+var gLatestValidFrequency = new Frequency();
+gFrequencyEventTarget.addEventListener('FrequencyChange', (e) => {
+  console.log(e);
+  gLatestValidFrequency = e.frequency;
+});
+
+gPlayPauseButton.addEventListener('click', (e) => {
+  const buttonClassList = gPlayPauseButton.classList;
   if (buttonClassList.contains('playing')) {
-    playPauseButton.innerText = 'Play';
+    gPlayPauseButton.innerText = 'Play';
     buttonClassList.remove('playing');
     if (gOscillator !== null) gOscillator.stop();
     gOscillator = null;
   } else {
-    playPauseButton.innerText = 'Pause';
+    gPlayPauseButton.innerText = 'Pause';
     buttonClassList.add('playing');
 
     if (gAudioContext === null) {
@@ -54,9 +100,9 @@ playPauseButton.addEventListener('click', (e) => {
 
     if (gOscillator !== null) gOscillator.stop();
     gOscillator = ctx.createOscillator();
-    gOscillator.type = functionKindSelect.value || 'sine';
+    gOscillator.type = gFunctionKindSelect.value || 'sine';
     gOscillator.frequency.setValueAtTime(
-      latestValidFrequency_.hz, ctx.currentTime);
+      gLatestValidFrequency.hz, ctx.currentTime);
     gOscillator.connect(ctx.destination);
     gOscillator.start();
   }

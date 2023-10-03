@@ -1,12 +1,32 @@
-export { MidiNote, Frequency };
+export class NoteError extends Error {};
+export class ParseError extends NoteError {};
+export class RangeError extends NoteError {};
 
-class Frequency {
+export class Frequency {
   static DEFAULT_HZ = 440;
   static MIN_HZ = 10;
   static MAX_HZ = 20_000;
 
-  /** @type {Number} */
-  #freq_hz = Frequency.DEFAULT_HZ;
+  /**
+   * @param {string} text
+   * @returns {Frequency}
+   */
+  static parse(text) {
+    text = text.trim();
+    if (text === "") return new Frequency();
+
+    const re = /^([0-9,]+[.]?[0-9]*)\s*(k?)\s*(?:hz)?$/i;
+    const m = text.match(re);
+    if (m === null) {
+      throw new ParseError(
+          `Must be a number ending in Hz or KHz. Got "${text}".`);
+    }
+
+    const hzText = m[1].replaceAll(",", "");
+    var hz = parseFloat(hzText);
+    if (m[2] !== "") hz *= 1000;
+    return new Frequency(hz);
+  }
 
   /**
    * @param {?Number} freq_hz
@@ -14,9 +34,10 @@ class Frequency {
   constructor(freq_hz) {
     if (freq_hz == null) freq_hz = Frequency.DEFAULT_HZ;
     if (freq_hz < Frequency.MIN_HZ || freq_hz > Frequency.MAX_HZ) {
-      throw new Error("Frequency must be between " +
-                      `${Frequency.MIN_HZ} Hz and ${Frequency.MAX_HZ} Hz.` +
-                      `Got ${freq_hz}.`)
+      throw new RangeError(
+          "Frequency must be between " +
+          `${Frequency.MIN_HZ} Hz and ${Frequency.MAX_HZ} Hz. ` +
+          `Got ${freq_hz}.`)
     }
     this.#freq_hz = freq_hz;
   }
@@ -27,24 +48,8 @@ class Frequency {
   static minAudible() { return new Frequency(Frequency.MIN_HZ); }
   static maxAudible() { return new Frequency(Frequency.MAX_HZ); }
 
-  /**
-   * @param {string} text
-   * @returns {Number}
-   */
-  static parse(text) {
-    text = text.trim();
-    if (text === "") return new Frequency();
-
-    const re = /^([0-9]+[.]?[0-9]*)\s*(k?)\s*(?:hz)?$/i;
-    const m = text.match(re);
-    if (m === null) {
-      throw new Error("Must be a whole number of Hz or KHz.");
-    }
-
-    var hz = parseFloat(m[1]);
-    if (m[2] !== "") hz *= 1000;
-    return new Frequency(hz);
-  }
+  /** @type {Number} */
+  #freq_hz = Frequency.DEFAULT_HZ;
 }
 
 
@@ -62,7 +67,7 @@ class Frequency {
  *   -  Highest Piano Note ~ 5K Hz
  *   - Human hearing range ~ 20 Hz to 20,000 Hz
  */
-class MidiNote {
+export class MidiNote {
   /**
    * The MIDI index number of this note. Non-MIDI frequencies are represented
    * with fractional index values.
