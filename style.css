@@ -1,8 +1,14 @@
 body {
   font-family: sans-serif;
-  margin: 0 10%;
+  margin: 0 auto;
+  padding: 0 10%;
   min-width: 400px;
+  max-width: 800px;
   width: 80%;
+}
+
+p {
+  margin: 0 0 1.5em 0;
 }
 
 .header {
@@ -12,7 +18,7 @@ body {
 
 .icon {
   height: 3em;
-  padding: 0 1.5em;
+  padding: 0 1.5em 0 0;
 }
 
 

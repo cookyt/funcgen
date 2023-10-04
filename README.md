@@ -1,5 +1,6 @@
-# funcgen
-Simple Audio Function Generator
+# Audio Function Generator
+
+Live app: https://cookyt.github.io/funcgen
 
 ## Roadmap
 
@@ -7,7 +8,6 @@ Simple Audio Function Generator
 - Put the panel into a web-component and allow multiple instances (so we can
   play multiple functions at once).
 - White noise function.
-- Volume Slider
 - L/R Pan Slider
 - Global control panel
 - Icons for the function types.
