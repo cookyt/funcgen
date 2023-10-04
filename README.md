@@ -11,6 +11,7 @@ Live app: https://cookyt.github.io/funcgen
 - L/R Pan Slider
 - Global control panel
 - Icons for the function types.
+- Make more mobile-friendly.
 
 ## Maybe?
 
