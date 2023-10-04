@@ -34,6 +34,6 @@ body {
 #frequencyInput {
   display: flex;
   flex-direction: column;
-  grid-row: span 3;
+  grid-row: span 2;
   align-self: center;
 }

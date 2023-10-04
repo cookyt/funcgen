@@ -71,12 +71,17 @@ gFrequencyInputSlider.addEventListener("input", (e) => {
 const gPlayPauseButton = document.querySelector("#playPauseButton");
 /** @type {HTMLSelectElement} */
 const gFunctionKindSelect = document.querySelector("#functionKindSelect");
+/** @type {HTMLInputElement} */
+const gVolumeSlider = document.querySelector("#volumeSlider");
 
 /** @type {?AudioContext} */
 var gAudioContext = null;
 
 /** @type {?OscillatorNode} */
 var gOscillator = null;
+
+/** @type {?GainNode} */
+var gGainNode = null;
 
 /** @type {Frequency} */
 var gLatestValidFrequency = new Frequency();
@@ -88,10 +93,31 @@ gFrequencyEventTarget.addEventListener('FrequencyChange', (
   }
 });
 
-gFunctionKindSelect.addEventListener('input', (e) => {
-  if (gOscillator != null) {
-    gOscillator.type = e.target.value;
+/**
+ * @param {HTMLInputElement} slider
+ * @returns {Number}
+ */
+function computeGain(slider) {
+  let newGain = slider.value / slider.max;
+  newGain = newGain * newGain;
+  return newGain;
+}
+
+gVolumeSlider.addEventListener('input', (e) => {
+  if (gGainNode == null) {
+    return;
   }
+
+  let newGain = computeGain(e.target);
+  console.debug(`Setting gain to ${newGain}`);
+  gGainNode.gain.value = newGain;
+});
+
+gFunctionKindSelect.addEventListener('input', (e) => {
+  if (gOscillator == null) {
+    return;
+  }
+  gOscillator.type = e.target.value;
 });
 
 gPlayPauseButton.addEventListener('click', (e) => {
@@ -99,7 +125,9 @@ gPlayPauseButton.addEventListener('click', (e) => {
   if (classList.contains('playing')) {
     e.target.innerText = 'Play';
     classList.remove('playing');
-    if (gOscillator !== null) gOscillator.stop();
+    if (gOscillator != null) {
+      gOscillator.stop();
+    }
     gOscillator = null;
     return;
   }
@@ -112,11 +140,19 @@ gPlayPauseButton.addEventListener('click', (e) => {
   }
   const ctx = gAudioContext;
 
-  if (gOscillator !== null) gOscillator.stop();
-  gOscillator = ctx.createOscillator();
-  gOscillator.type = gFunctionKindSelect.value || 'sine';
-  gOscillator.frequency.value = gLatestValidFrequency.hz;
-  gOscillator.connect(ctx.destination);
+  if (gGainNode == null) {
+    gGainNode = ctx.createGain();
+    gGainNode.gain.value = computeGain(gVolumeSlider);
+    gGainNode.connect(ctx.destination);
+  }
+
+  if (gOscillator == null) {
+    gOscillator = ctx.createOscillator();
+    gOscillator.type = gFunctionKindSelect.value || 'sine';
+    gOscillator.frequency.value = gLatestValidFrequency.hz;
+    gOscillator.connect(gGainNode);
+  }
+
   gOscillator.start();
 });
 
