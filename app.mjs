@@ -1,6 +1,3 @@
-/** @type {HTMLElement} */
-const gOscillatorPanel = document.querySelector("#oscillatorPanel");
-
 ///////
 
 // TODO: Make this section a web component.
@@ -84,35 +81,11 @@ class FrequencyInput extends EventTarget {
   }
 }
 
-const gFrequencyInput = new FrequencyInput();
-
 //////
-
-/** @type {HTMLButtonElement} */
-const gPlayPauseButton = document.querySelector("#playPauseButton");
-/** @type {HTMLSelectElement} */
-const gFunctionKindSelect = document.querySelector("#functionKindSelect");
-
-/** @type {?AudioContext} */
-var gAudioContext = null;
-
-/** @type {?OscillatorNode} */
-var gOscillator = null;
-
-/** @type {Frequency} */
-var gLatestValidFrequency = new Frequency();
-gFrequencyInput.addEventListener('FrequencyInput', (
-    /** @type {FrequencyInputEvent} **/e) => {
-  gLatestValidFrequency = e.frequency;
-  if (gOscillator != null) {
-    gOscillator.frequency.value = e.frequency.hz;
-  }
-});
 
 class VolumeInput {
   /** @type {?GainNode} */
-  gainNode = null;
-
+  #gainNode = null;
   /** @type {HTMLInputElement} */
   #inputSlider = document.querySelector("#volumeInputSlider");
   /** @type {HTMLInputElement} */
@@ -124,19 +97,17 @@ class VolumeInput {
   }
 
   /**
-   * Initializes the gainNode by using the given audioContext.
-   * If the gainNode is already initialized, does nothing.
+   * (Re-)Initializes the gainNode by using the given audioContext.
    *
    * @param {AudioContext} ctx
    */
   initGainNode(ctx) {
-    if (this.gainNode != null) return;
-
-    this.gainNode = ctx.createGain();
+    this.#gainNode = ctx.createGain();
     this.#updateGainParam();
-    this.gainNode.connect(ctx.destination);
+    this.#gainNode.connect(ctx.destination);
   }
 
+  get gainNode() { return this.#gainNode; }
   get value() { return this.#inputSlider.value; }
   get max() { return this.#inputSlider.max; }
   get min() { return this.#inputSlider.min; }
@@ -148,8 +119,8 @@ class VolumeInput {
     let newGain = (this.value - this.min) / (this.max - this.min);
     newGain = newGain * newGain;  // Approximate logarithmic behavior.
     console.debug(`Setting gain to ${newGain}`);
-    if (this.gainNode != null) {
-      this.gainNode.gain.value = newGain;
+    if (this.#gainNode != null) {
+      this.#gainNode.gain.value = newGain;
     }
     return newGain;
   }
@@ -159,6 +130,7 @@ class VolumeInput {
     this.#inputText.value = `${e.target.value}`;
     this.#updateGainParam();
   }
+
   /** @param {Event} e */
   #onTextInput(e) {
     console.debug(e)
@@ -201,17 +173,33 @@ class VolumeInput {
   }
 }
 
+//////
+
+/** @type {HTMLButtonElement} */
+const gPlayPauseButton = document.querySelector("#playPauseButton");
+
+/** @type {HTMLSelectElement} */
+const gFunctionKindSelect = document.querySelector("#functionKindSelect");
+
+const gFrequencyInput = new FrequencyInput();
+
 const gVolumeInput = new VolumeInput();
 
-/**
- * @param {HTMLInputElement} slider
- * @returns {Number}
- */
-function computeGain(slider) {
-  let newGain = slider.value / slider.max;
-  newGain = newGain * newGain;
-  return newGain;
-}
+/** @type {?AudioContext} */
+var gAudioContext = null;
+
+/** @type {?OscillatorNode} */
+var gOscillator = null;
+
+/** @type {Frequency} */
+var gLatestValidFrequency = new Frequency();
+gFrequencyInput.addEventListener('FrequencyInput', (
+    /** @type {FrequencyInputEvent} **/e) => {
+  gLatestValidFrequency = e.frequency;
+  if (gOscillator != null) {
+    gOscillator.frequency.value = e.frequency.hz;
+  }
+});
 
 gFunctionKindSelect.addEventListener('input', (e) => {
   if (gOscillator == null) {
@@ -240,7 +228,9 @@ gPlayPauseButton.addEventListener('click', (e) => {
   }
   const ctx = gAudioContext;
 
-  gVolumeInput.initGainNode(ctx);
+  if (gVolumeInput.gainNode == null) {
+    gVolumeInput.initGainNode(ctx);
+  }
 
   if (gOscillator == null) {
     gOscillator = ctx.createOscillator();
