@@ -1,10 +1,13 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-family: sans-serif;
   margin: 0 auto;
-  padding: 0 10%;
-  min-width: 400px;
-  max-width: 800px;
-  width: 80%;
+  padding: 0 0.5em;
+  max-width: 50em;
+  width: 100%;
 }
 
 p {
@@ -26,20 +29,68 @@ p {
 
 #oscillatorPanel {
   display: grid;
-  grid: repeat(3, minmax(2em, max-content)) / auto-flow 1fr 3fr;
+  height: 6em;
+  grid-template:
+    "playpause  sliders"
+    "playpause  sliders"
+    "kindselect sliders"
+    / minmax(5em, 1fr) 3fr;
   gap: 0.5em;
 }
 #playPauseButton {
   font-size: x-large;
-  grid-row: span 2;
+  grid-area: playpause;
 }
 #functionKindSelect {
-  grid-row: span 1;
+  grid-area: kindselect;
 }
 
-#frequencyInput {
+#sliders {
+  grid-area: sliders;
   display: flex;
   flex-direction: column;
-  grid-row: span 2;
-  align-self: center;
+  justify-content: space-evenly;
+  container: sliders / inline-size;
+}
+#sliders > * {
+  width:100%;
+}
+
+.sliderPanel {
+  display: grid;
+  grid-template:
+    "label  text"
+    "slider slider"
+    / minmax(5em, 1fr) 4fr;
+  align-items: center;
+  gap: 0.25em;
+  margin: 0.5em 0;
+}
+.sliderPanel label {
+  text-align: right;
+  &::after {
+    content: ": ";
+    margin-right: 0.25em;
+  }
+}
+.sliderPanel input[type=text] {
+  width: 100%;
+  min-width: 6em;
+}
+.sliderPanel input[type=range] {
+  width: 100%;
+  grid-area: slider;
+}
+
+@container (width <= 200px) {
+  .sliderPanel {
+    grid-template:
+      "label"
+      "text"
+      "slider"
+      / 1fr;
+  }
+  .sliderPanel label {
+    text-align: left;
+  }
 }

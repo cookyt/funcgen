@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<meta charset="UTF-8" />
+<meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <title>Audio Function Generator</title>
@@ -24,13 +24,20 @@
     <option value="triangle">Triangle</option>
   </select>
 
-  <div id="frequencyInput">
-    <input id="frequencyInputText" type="text" placeholder="440 Hz"/>
-    <input id="frequencyInputSlider" type="range" min="4" max="135" step="1"/>
-  </div>
+  <div id="sliders">
+    <div id="frequencyInput" class="sliderPanel">
+      <label for="frequencyInputText">Frequency</label>
+      <input id="frequencyInputText" type="text" placeholder="440 Hz"/>
+      <input id="frequencyInputSlider"
+             type="range" min="4" max="135" value="69" step="1"/>
+    </div>
 
-  <div>
-    <label for="volumeSlider">Volume</label>
-    <input id="volumeSlider" type="range" min="0" max="100" step="1"/>
+    <div id="volumeInput" class="sliderPanel">
+      <label for="volumeInputText">Volume</label>
+      <input id="volumeInputText"
+             type="number" min="0" max="100" value="75"/>
+      <input id="volumeInputSlider"
+             type="range" min="0" max="100" value="75" step="1"/>
+    </div>
   </div>
 </div>
