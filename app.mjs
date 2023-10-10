@@ -175,11 +175,15 @@ class VolumeInput {
 
 //////
 
+import { ForceableWakeLockInput } from "./wakelock.mjs";
+
 /** @type {HTMLButtonElement} */
 const gPlayPauseButton = document.querySelector("#playPauseButton");
 
 /** @type {HTMLSelectElement} */
 const gFunctionKindSelect = document.querySelector("#functionKindSelect");
+
+const gWakeLock = new ForceableWakeLockInput("#wakeLockParent");
 
 const gFrequencyInput = new FrequencyInput();
 

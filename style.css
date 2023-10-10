@@ -81,7 +81,6 @@ p {
   width: 100%;
   grid-area: slider;
 }
-
 @container (width <= 200px) {
   .sliderPanel {
     grid-template:
