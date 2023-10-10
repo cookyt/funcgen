@@ -7,64 +7,84 @@ const gOscillatorPanel = document.querySelector("#oscillatorPanel");
 
 import {Frequency, MidiNote, NoteError} from "./note.mjs";
 
-/** @type {HTMLInputElement} */
-const gFrequencyInputText = document.querySelector("#frequencyInputText");
-/** @type {HTMLInputElement} */
-const gFrequencyInputSlider = document.querySelector("#frequencyInputSlider");
-
-const gSliderNote = new MidiNote();
-gFrequencyInputSlider.value = gSliderNote.index;
-
-class FrequencyChangeEvent extends Event {
+class FrequencyInputEvent extends Event {
   /**
    * @param {Frequency} frequency
    */
   constructor(frequency) {
-    super("FrequencyChange");
+    super("FrequencyInput");
     this.frequency = frequency;
   }
 }
 
-class FrequencyEventTarget extends EventTarget {
+/**
+ * Element for handling frequency-valued inputs.
+ *
+ * @fires FrequencyInputEvent When the user changes the frequency.
+ */
+class FrequencyInput extends EventTarget {
+  /** @type {HTMLInputElement} */
+  #inputText = document.querySelector("#frequencyInputText");
+
+  /** @type {HTMLInputElement} */
+  #inputSlider = document.querySelector("#frequencyInputSlider");
+
+  #note = new MidiNote();
+
+  constructor() {
+    super("FrequencyInput");
+    this.#inputText.addEventListener("input", e => this.#onTextInput(e));
+    this.#inputSlider.addEventListener("input", e => this.#onSliderInput(e));
+
+    this.#inputSlider.value = this.#note.index;
+    this.#inputText.placeholder = this.#note.frequency.toString();
+  }
+
+  /**
+   * @param {Event} e
+   */
+  #onTextInput(e) {
+    console.debug(e);
+
+    let freq;
+    e.target.setCustomValidity("");
+    try {
+      freq = Frequency.parse(e.target.value);
+    } catch (err) {
+      if (!(err instanceof NoteError)) throw err;
+      e.target.setCustomValidity(err.message);
+      return;
+    } finally {
+      e.target.reportValidity();
+    }
+
+    this.#dispatchFreq(freq);
+    this.#note.frequency = freq;
+    this.#inputSlider.value = this.#note.index;
+  }
+
+  /**
+   * @param {Event} e
+   */
+  #onSliderInput(e) {
+    console.debug(e);
+
+    this.#note.index = e.target.value;
+    const freq = this.#note.frequency;
+    this.#inputText.value = freq.toString();
+
+    this.#dispatchFreq(freq);
+  }
+
   /**
    * @param {Frequency} freq
    */
-  dispatchFrequency(freq) {
-    this.dispatchEvent(new FrequencyChangeEvent(freq));
+  #dispatchFreq(freq) {
+    this.dispatchEvent(new FrequencyInputEvent(freq));
   }
-};
+}
 
-const gFrequencyEventTarget = new FrequencyEventTarget();
-
-gFrequencyInputText.addEventListener("input", (e) => {
-  console.debug(e);
-
-  let freq;
-  e.target.setCustomValidity("");
-  try {
-    freq = Frequency.parse(e.target.value);
-  } catch (err) {
-    if (!(err instanceof NoteError)) throw err;
-    e.target.setCustomValidity(err.message);
-    return;
-  } finally {
-    e.target.reportValidity();
-  }
-
-  gFrequencyEventTarget.dispatchFrequency(freq);
-  gSliderNote.frequency = freq;
-  gFrequencyInputSlider.value = gSliderNote.index;
-});
-
-gFrequencyInputSlider.addEventListener("input", (e) => {
-  console.debug(e);
-
-  gSliderNote.index = e.target.value;
-  gFrequencyEventTarget.dispatchFrequency(gSliderNote.frequency);
-  const hz = gSliderNote.frequency.hz;
-  gFrequencyInputText.value =
-      `${hz.toLocaleString('en-US', {maximumFractionDigits: 2})} Hz`;
-});
+const gFrequencyInput = new FrequencyInput();
 
 //////
 
@@ -81,8 +101,8 @@ var gOscillator = null;
 
 /** @type {Frequency} */
 var gLatestValidFrequency = new Frequency();
-gFrequencyEventTarget.addEventListener('FrequencyChange', (
-    /** @type {FrequencyChangeEvent} **/e) => {
+gFrequencyInput.addEventListener('FrequencyInput', (
+    /** @type {FrequencyInputEvent} **/e) => {
   gLatestValidFrequency = e.frequency;
   if (gOscillator != null) {
     gOscillator.frequency.value = e.frequency.hz;

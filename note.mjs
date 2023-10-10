@@ -45,6 +45,15 @@ export class Frequency {
   /** @returns {Number} */
   get hz() { return this.#freq_hz; }
 
+  /**
+   * @returns {string} A human-readable representation of this (audio)
+   * frequency. Uses 2 decimals of precision, since it's probably impossible
+   * to hear more than that.
+   */
+  toString() {
+    return `${this.#freq_hz.toLocaleString('en-US', {maximumFractionDigits: 2})} Hz`;
+  }
+
   static minAudible() { return new Frequency(Frequency.MIN_HZ); }
   static maxAudible() { return new Frequency(Frequency.MAX_HZ); }
 
