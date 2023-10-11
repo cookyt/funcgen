@@ -1,3 +1,6 @@
+const CLOSED_LOCK = '\u{1F512}';
+const OPEN_LOCK = '\u{1F513}';
+
 export class ForceableWakeLockInput {
   /** @type {HTMLElement} */
   #parent;
@@ -27,10 +30,10 @@ export class ForceableWakeLockInput {
     }
 
     this.#parent.innerHTML = `
-      <p>
-        <button>Grab Wake Lock</button>
-        <span class="statusMessage">Lock Released</span>
-      </p>
+      <div>
+        <span class="statusMessage">${OPEN_LOCK}</span>
+        <button>Grab</button>
+      </div>
     `;
 
     this.#button = this.#parent.querySelector("button");
@@ -42,21 +45,21 @@ export class ForceableWakeLockInput {
   async #grabLockOnClick() {
     try {
       this.#lock = await navigator.wakeLock.request("screen");
-      this.#statusElem.textContent = 'Lock Acquired';
+      this.#statusElem.textContent = CLOSED_LOCK;
     } catch (err) {
       this.#statusElem.textContent = `ERROR: ${err.name}, ${err.message}`
       return;
     }
 
-    this.#button.textContent = 'Release Wake Lock';
+    this.#button.textContent = 'Release';
     this.#button.onclick = async () => {
       await this.#lock.release();
       this.#lock = null;
       this.#button.onclick = () => this.#grabLockOnClick();
     };
     this.#lock.addEventListener("release", () => {
-      this.#button.textContent = "Grab Wake Lock";
-      this.#statusElem.textContent = "Lock Released";
+      this.#button.textContent = "Grab";
+      this.#statusElem.textContent = OPEN_LOCK;
     })
 
   }

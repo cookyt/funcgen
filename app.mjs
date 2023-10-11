@@ -174,8 +174,10 @@ class VolumeInput {
 }
 
 //////
+//////
 
 import { ForceableWakeLockInput } from "./wakelock.mjs";
+import { AudioOutputDeviceSelector } from "./audio-device-selector.mjs"
 
 /** @type {HTMLButtonElement} */
 const gPlayPauseButton = document.querySelector("#playPauseButton");
@@ -188,6 +190,9 @@ const gWakeLock = new ForceableWakeLockInput("#wakeLockParent");
 const gFrequencyInput = new FrequencyInput();
 
 const gVolumeInput = new VolumeInput();
+
+const gAudioOutputDeviceSelector =
+    new AudioOutputDeviceSelector("#audioOutputDeviceSelector");
 
 /** @type {?AudioContext} */
 var gAudioContext = null;
@@ -212,7 +217,7 @@ gFunctionKindSelect.addEventListener('input', (e) => {
   gOscillator.type = e.target.value;
 });
 
-gPlayPauseButton.addEventListener('click', (e) => {
+gPlayPauseButton.addEventListener('click', async (e) => {
   const classList = e.target.classList;
   if (classList.contains('playing')) {
     e.target.innerText = 'Play';
@@ -227,10 +232,7 @@ gPlayPauseButton.addEventListener('click', (e) => {
   e.target.innerText = 'Pause';
   classList.add('playing');
 
-  if (gAudioContext === null) {
-    gAudioContext = new window.AudioContext();
-  }
-  const ctx = gAudioContext;
+  const ctx = await gAudioOutputDeviceSelector.getOrCreateAudioContext();
 
   if (gVolumeInput.gainNode == null) {
     gVolumeInput.initGainNode(ctx);

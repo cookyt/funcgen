@@ -65,21 +65,22 @@ p {
   align-items: center;
   gap: 0.25em;
   margin: 0.5em 0;
-}
-.sliderPanel label {
-  text-align: right;
-  &::after {
-    content: ": ";
-    margin-right: 0.25em;
+
+  & label {
+    text-align: right;
+    &:after {
+      content: ": ";
+      margin-right: 0.25em;
+    }
   }
-}
-.sliderPanel input[type=text] {
-  width: 100%;
-  min-width: 6em;
-}
-.sliderPanel input[type=range] {
-  width: 100%;
-  grid-area: slider;
+  & input[type=text] {
+    width: 100%;
+    min-width: 6em;
+  }
+  & input[type=range] {
+    width: 100%;
+    grid-area: slider;
+  }
 }
 @container (width <= 200px) {
   .sliderPanel {
@@ -88,8 +89,39 @@ p {
       "text"
       "slider"
       / 1fr;
+    & label {
+      text-align: left;
+    }
   }
-  .sliderPanel label {
-    text-align: left;
+}
+
+#globalOptions {
+  display: grid;
+  grid: auto-flow/ max-content 1fr;
+  gap: 1em 0.5em;
+  margin: 1em 0;
+  max-width: 100%;
+
+  & label {
+    text-align: right;
   }
+  & label:after {
+    content: ":";
+  }
+
+  & #audioOutputDeviceSelector {
+    display: flex;
+    flex-direction: row;
+    gap: 0.25em;
+    min-width: 0;
+
+    & select {
+      width: 10em;
+    }
+
+    & > * {
+      min-width: 2em;
+    }
+  }
+
 }
